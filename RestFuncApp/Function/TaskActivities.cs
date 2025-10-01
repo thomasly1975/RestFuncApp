@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RestFuncApp.Model;
 using System.Collections.Generic;
@@ -18,9 +18,9 @@ namespace RestFuncApp.Function
         [FunctionName("TaskCreation")]
         public static async Task<IActionResult> TaskCreation(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "task")] HttpRequest req,
-             TraceWriter log)
+             ILogger log)
         {
-            log.Info("Creating a new Task list item");
+            log.LogInformation("Creating a new Task list item");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var input = JsonConvert.DeserializeObject<TaskCreateModel>(requestBody);
 
@@ -32,17 +32,16 @@ namespace RestFuncApp.Function
         public static IActionResult GetAllTasks(
             [HttpTrigger(AuthorizationLevel.Anonymous,
                 "get", Route = "task")]
-            HttpRequest req, TraceWriter log)
+            HttpRequest req, ILogger log)
         {
-            log.Info("Getting Task list items");
+            log.LogInformation("Getting Task list items");
             return new OkObjectResult(Items);
         }
         [FunctionName("GetTaskById")]
         public static IActionResult GetTaskById(
            [HttpTrigger(AuthorizationLevel.Anonymous,
                 "get", Route = "task/{id}")]
-            HttpRequest req,
-           TraceWriter log, string id)
+            HttpRequest req, string id)
         {
             var task = Items.FirstOrDefault(t => t.Id == id);
             if (task == null)
@@ -56,8 +55,7 @@ namespace RestFuncApp.Function
         public static async Task<IActionResult> UpdateTask(
             [HttpTrigger(AuthorizationLevel.Anonymous,
                 "put", Route = "task/{id}")]
-            HttpRequest req,
-            TraceWriter log, string id)
+            HttpRequest req, string id)
         {
             var task = Items.FirstOrDefault(t => t.Id == id);
             if (task == null)
@@ -79,8 +77,7 @@ namespace RestFuncApp.Function
         public static IActionResult DeleteTask(
             [HttpTrigger(AuthorizationLevel.Anonymous,
                 "delete", Route = "task/{id}")]
-            HttpRequest req,
-            TraceWriter log, string id)
+            HttpRequest req, string id)
         {
             var task = Items.FirstOrDefault(t => t.Id == id);
             if (task == null)
